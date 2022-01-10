@@ -29,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.routeplanassignment.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.Polyline;
@@ -58,6 +59,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -77,6 +79,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng sL,dL;
     private List<LatLng> path=new ArrayList<>();
     private final int REQUEST_LOCATION_PERMISSION = 1;
+    private HashMap<String, Marker> hashMapMarker = new HashMap<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,11 +153,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // TODO: Get info about the selected place.
                 Log.i("TAG", "Place: " + place.getName() + ", " + place.getId());
                 sL=place.getLatLng();
+                if(hashMapMarker.containsKey("source")){
+                    Marker source =hashMapMarker.get("source");
+                    source.remove();
+                    route.remove();
 
-                mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title("Marker in Sydney"));
+                }
+                hashMapMarker.put("source",mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName())));
                 CameraUpdate zoom=CameraUpdateFactory.zoomTo(10);
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
                 mMap.animateCamera(zoom);
+                if(dL!=null){
+                    updateDirections();
+                }
 
             }
 
@@ -179,51 +191,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onPlaceSelected(@NonNull Place place) {
                 dL=place.getLatLng();
-                // TODO: Get info about the selected place.
+
                 Log.i("TAG", "Place: " + place.getName() + ", " + place.getId());
-                mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName()));
+                if(hashMapMarker.containsKey("destination")){
+                    Marker source =hashMapMarker.get("destination");
+                    source.remove();
+                    route.remove();
+
+                }
+                hashMapMarker.put("destination",mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName())));
                 CameraUpdate zoom=CameraUpdateFactory.zoomTo(10);
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
                 mMap.animateCamera(zoom);
+                if(sL!=null){
+                    updateDirections();
+                }
 
-                    Thread thread = new Thread(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            try  {
-                                JSONObject Jobject = readJsonFromUrl("https://maps.googleapis.com/maps/api/directions/json?origin="+sL.latitude+","+sL.longitude+"&destination="+dL.latitude+","+dL.longitude+"&key="+getString(R.string.google_maps_key));
-                                String data = Jobject.toString();
-                                Log.i("TAG", "Raw data "+data);
-                                data=StringUtils.substringBetween(data,"\"steps\":[","],\"overview_polyline\"");
-                                String allploy[];
-                                allploy=StringUtils.substringsBetween(data, "{\"points\":\"","\"},");
-                                Log.i("TAG", "Total Coordinates "+allploy.length);
-                                options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
-
-                                    for (int k =0;k<allploy.length;k++){
-                                        Log.i("TAG", "poly"+allploy[k]);
-                                        path.addAll(PolyUtil.decode(StringEscapeUtils.unescapeJava(allploy[k].trim())));
-                                }
-                                    for(int j=0;j<path.size();j++){
-                                        options.add(path.get(j));
-                                    }
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    thread.start();
 
             }
 
             @Override
             public void onError(@NonNull Status status) {
-                // TODO: Handle the error.
                 Log.i("TAG", "An error occurred: " + status);
             }
         });
 
+    }
+
+    private void updateDirections(){
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    path=new ArrayList<>();
+                    JSONObject Jobject = readJsonFromUrl("https://maps.googleapis.com/maps/api/directions/json?origin="+sL.latitude+","+sL.longitude+"&destination="+dL.latitude+","+dL.longitude+"&key="+getString(R.string.google_maps_key));
+                    String data = Jobject.toString();
+                    Log.i("TAG", "Raw data "+data);
+                    data=StringUtils.substringBetween(data,"\"steps\":[","],\"overview_polyline\"");
+                    String allploy[];
+                    allploy=StringUtils.substringsBetween(data, "{\"points\":\"","\"},");
+                    Log.i("TAG", "Total Coordinates "+allploy.length);
+                    options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+
+                    for (int k =0;k<allploy.length;k++){
+                        Log.i("TAG", "poly"+allploy[k]);
+                        path.addAll(PolyUtil.decode(StringEscapeUtils.unescapeJava(allploy[k].trim())));
+                    }
+                    for(int j=0;j<path.size();j++){
+                        options.add(path.get(j));
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
     private void getDeviceLocation() {
         try {
