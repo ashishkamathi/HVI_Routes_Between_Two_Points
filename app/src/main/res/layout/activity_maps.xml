@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <include layout="@layout/map" />
 
 
@@ -27,23 +28,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="40dp"
-            android:layout_height="55dp"
-            android:layout_gravity="right"
-            android:onClick="navigate_to_current"
-            android:paddingRight="5dp"
-            map:srcCompat="@drawable/location" />
-
     </LinearLayout>
 
-    <Button
-        android:id="@+id/button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:onClick="showRoute"
-        android:text="Show Route" />
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:contentDescription="navigate"
+            android:onClick="navigate_to_current"
+            android:paddingRight="5dp"
+            android:src="@drawable/location" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="showRoute"
+            android:text="Show Route" />
+
+    </LinearLayout>
 
 </RelativeLayout>

@@ -134,8 +134,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getDeviceLocation();
 
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
-
-
         // Initialize the AutocompleteSupportFragment.
         AutocompleteSupportFragment source = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
@@ -297,6 +295,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void showRoute(View view){
         route = mMap.addPolyline(options);
+
+    }
+
+    public void navigate_to_current(View view){
+        getDeviceLocation();
 
     }
 
