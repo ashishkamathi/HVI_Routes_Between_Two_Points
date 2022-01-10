@@ -78,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LatLng sL,dL;
     private List<LatLng> path=new ArrayList<>();
+    private  LatLng currentLatLng;
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private HashMap<String, Marker> hashMapMarker = new HashMap<>();
 
@@ -133,12 +134,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setMyLocationEnabled(true);
         getDeviceLocation();
 
+
+
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         // Initialize the AutocompleteSupportFragment.
         AutocompleteSupportFragment source = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         source.getView().setBackgroundColor(Color.WHITE);
         source.setHint("Where From");
+        source.setText("Your Current Location");
 
 
         // Specify the types of place data to return.
@@ -153,7 +157,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 sL=place.getLatLng();
                 if(hashMapMarker.containsKey("source")){
                     Marker source =hashMapMarker.get("source");
-                    source.remove();
+                    if(source!=null){
+                        source.remove();
+                    }
+
                     route.remove();
 
                 }
@@ -258,11 +265,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (task.isSuccessful()) {
                         // Set the map's camera position to the current location of the device.
                         Location location = task.getResult();
-                        LatLng currentLatLng = new LatLng(location.getLatitude(),
+                         currentLatLng = new LatLng(location.getLatitude(),
                                 location.getLongitude());
                         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(currentLatLng,
                                 20);
                         mMap.moveCamera(update);
+                        sL=currentLatLng;
+                        Marker m=null ;
+                        hashMapMarker.put("source",m);
                     }
                 }
             });
