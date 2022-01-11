@@ -4,8 +4,8 @@ This app enables users to get a highlighted route between two locations on a map
 Additionally the app also tells users the distance between the two points and the estimated duration it might take to travel.
 
 ##### Table of Contents  
-[Screenshots](##screenshots)  
-[Video](##video)
+[Screenshots](#screenshots)  
+[Video](#video)
 
 ## Screenshots
 ![Screenshot1](/ss1.jpg)<p>![Screenshot2](/ss2.jpg)<p>![Screenshot3](/ss3.jpg)
