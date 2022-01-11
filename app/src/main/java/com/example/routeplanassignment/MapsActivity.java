@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -81,11 +82,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private  LatLng currentLatLng;
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private HashMap<String, Marker> hashMapMarker = new HashMap<>();
+    private String distance;
+    private String duration;
+    private TextView distanceDuration;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         mFusedLocationProviderClient = LocationServices
@@ -111,6 +116,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
         if(EasyPermissions.hasPermissions(this, perms)) {
             Toast.makeText(this, "Permission already granted", Toast.LENGTH_SHORT).show();
+            getDeviceLocation();
         }
         else {
             EasyPermissions.requestPermissions(this, "Please grant the location permission", REQUEST_LOCATION_PERMISSION, perms);
@@ -129,9 +135,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        distanceDuration=findViewById(R.id.distanceDuration);
         mMap = googleMap;
+
         requestLocationPermission();
-        mMap.setMyLocationEnabled(true);
+        if(EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            mMap.setMyLocationEnabled(true);
+        }
         getDeviceLocation();
 
 
@@ -152,7 +162,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         source.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                // TODO: Get info about the selected place.
+
                 Log.i("TAG", "Place: " + place.getName() + ", " + place.getId());
                 sL=place.getLatLng();
                 if(hashMapMarker.containsKey("source")){
@@ -177,7 +187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onError(@NonNull Status status) {
-                // TODO: Handle the error.
+
                 Log.i("TAG", "An error occurred: " + status);
             }
         });
@@ -233,8 +243,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     path=new ArrayList<>();
                     JSONObject Jobject = readJsonFromUrl("https://maps.googleapis.com/maps/api/directions/json?origin="+sL.latitude+","+sL.longitude+"&destination="+dL.latitude+","+dL.longitude+"&key="+getString(R.string.google_maps_key));
                     String data = Jobject.toString();
+                    distance=StringUtils.substringBetween(data,"\"legs\":[{\"distance\":{\"text\":\"","\",");
+                    duration=StringUtils.substringBetween(data,"\"duration\":{\"text\":\"","\",");
                     Log.i("TAG", "Raw data "+data);
                     data=StringUtils.substringBetween(data,"\"steps\":[","],\"overview_polyline\"");
+
                     String allploy[];
                     allploy=StringUtils.substringsBetween(data, "{\"points\":\"","\"},");
                     Log.i("TAG", "Total Coordinates "+allploy.length);
@@ -247,6 +260,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for(int j=0;j<path.size();j++){
                         options.add(path.get(j));
                     }
+                    Log.i("TAG", "Distance data "+distance + duration);
+                    distanceDuration.setText("Distance: "+distance+" Duration: "+duration);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -265,8 +280,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (task.isSuccessful()) {
                         // Set the map's camera position to the current location of the device.
                         Location location = task.getResult();
-                         currentLatLng = new LatLng(location.getLatitude(),
-                                location.getLongitude());
+                         currentLatLng = new LatLng(location.getLatitude(),location.getLongitude());
                         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(currentLatLng,
                                 20);
                         mMap.moveCamera(update);
