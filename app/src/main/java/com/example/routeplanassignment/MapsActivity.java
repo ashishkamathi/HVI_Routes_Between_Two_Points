@@ -110,28 +110,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
-
+//function to request user location permissions
     @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
     public void requestLocationPermission() {
         String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
         if(EasyPermissions.hasPermissions(this, perms)) {
             Toast.makeText(this, "Permission already granted", Toast.LENGTH_SHORT).show();
             getDeviceLocation();
+
         }
         else {
             EasyPermissions.requestPermissions(this, "Please grant the location permission", REQUEST_LOCATION_PERMISSION, perms);
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -158,7 +151,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Specify the types of place data to return.
         source.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME,Place.Field.LAT_LNG));
 
-        // Set up a PlaceSelectionListener to handle the response.
+        // Set up a PlaceSelectionListener to handle the response and get co-ordinates of selected place
         source.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
@@ -233,7 +226,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
-
+//calls the api and obtains directions and polyline data to plot route
     private void updateDirections(){
         Thread thread = new Thread(new Runnable() {
 
@@ -270,9 +263,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
         thread.start();
     }
+    //gets device location and sets camera
     private void getDeviceLocation() {
         try {
-
+            mMap.setMyLocationEnabled(true);
             Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
             locationResult.addOnCompleteListener(new OnCompleteListener<Location>() {
                 @Override
@@ -304,7 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         return sb.toString();
     }
-
+//reads json returned from api call
     public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
         try {
@@ -316,12 +310,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             is.close();
         }
     }
-
+//draws route on  map on press of button
     public void showRoute(View view){
         route = mMap.addPolyline(options);
 
     }
-
+//on press of current location navigates to current location
     public void navigate_to_current(View view){
         getDeviceLocation();
 
