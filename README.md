@@ -7,6 +7,7 @@ Additionally the app also tells users the distance between the two points and th
 ![Screenshot1](/ss1.jpg)<p>![Screenshot2](/ss2.jpg)<p>![Screenshot3](/ss3.jpg)
 
 ## Video
+  [Watch the Video here](https://drive.google.com/file/d/1XEF7YHhLAk87abD7xn3mRei2RSw-zyJc/view?usp=sharing)
 
 ## Implementation
 As mentioned earlier I have used google places API and google directions API, the drop down that suggests places as we type is Autocomplete Support Fragment which works with the API
